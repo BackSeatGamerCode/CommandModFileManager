@@ -175,7 +175,7 @@
             </div>
 
             <div class="col-sm-9">
-                <h2 class="h4">In-Game Commands</h2>
+                <h2 class="h4">In-Game Commands <template v-if="selectedCommand !== null">For ${selectedCommand}</template></h2>
                 <span v-if="selectedCommand == null" class="text-muted">
                     Please select a reward in the left panel to edit the in-game commands
                 </span>
