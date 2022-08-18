@@ -9,6 +9,7 @@
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css">
+    <link rel="stylesheet" href="https://backseatgamer.pythonanywhere.com/static/css/theme.css">
     <link rel="stylesheet" href="/css/theme.css">
 
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
@@ -29,7 +30,18 @@
     <title>BackSeatGamer Command Mod File Manager</title>
 </head>
 <body>
-    <div class="container" id="app">
+
+    <nav class="navbar navbar-expand-sm bg-dark navbar-dark mb-2">
+        <div class="container">
+            <a class="navbar-brand" href="https://backseatgamer.pythonanywhere.com/">
+                <img src="/images/logo/logo.png" style="height: 40px; padding: 0; margin-right: 5px" alt="BackSeatGamer Logo" class="nav-logo"> BackSeatGamer
+            </a>
+        </div>
+    </nav>
+
+
+
+    <div class="container mb-5" id="app">
 
         <div class="modal fade" id="newReward">
             <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -124,8 +136,8 @@
             </div>
         </div>
 
-        <h1>BackSeatGamer Command Mod File Manager</h1>
-        <div class="row mb-3">
+        <h1 class="mb-4">BackSeatGamer Command Mod File Manager</h1>
+        <div class="row mb-4">
             <div class="col-sm-3">
                 <h2 class="h4">Rewards</h2>
                 <div class="list-group">
@@ -259,7 +271,8 @@
                     this.fileData = {
                         commands: {},
                         variables: {}
-                    }
+                    };
+                    this.selectedCommand = null;
                 }
             },
             mounted(){
