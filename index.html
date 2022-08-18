@@ -134,6 +134,35 @@
             </div>
         </div>
 
+        <div class="modal fade" id="setupFromSession">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <h4 class="modal-title">New Reward</h4>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+
+                    <div class="modal-body">
+
+                        <form v-on:submit.prevent="setupFromSession">
+                            <div class="form-group">
+                                <label for="authCode">Authentication Code</label>
+                                <input id="authCode" name="authCode" type="text" class="form-control" aria-describedby="authCodeHelpBlock" v-model="authCode.authCode">
+
+                                <span v-if="authCode.error !== null" class="form-text text-danger">${ authCode.error }</span>
+                                <span v-else class="form-text text-muted">The Authentication Code from your BackSeatGamer session</span>
+                            </div>
+                            <div class="form-group">
+                                <button name="submit" type="submit" class="btn btn-primary">Import</button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
         <h1 class="mb-4 h2">BackSeatGamer Command Mod File Manager</h1>
         <div class="row mb-4">
             <div class="col-sm-3">
@@ -180,18 +209,25 @@
 
         <!--        <button class="btn btn-primary mr-1">Save</button>-->
         <button class="btn btn-primary mr-1" @click="clearData">Clear</button>
+        <button class="btn btn-primary mr-1" data-toggle="modal" data-target="#setupFromSession" @click="authCode.error = null">Setup From Session</button>
 
         <span v-if="loading">Loading...</span>
 
     </div>
 
     <script type="text/javascript">
+        const URL_BASE = "https://backseatgamer.pythonanywhere.com";
+
         var app = new Vue({
             el: '#app',
             delimiters: ["${","}"],
             data: {
                 newReward: {
                     command: "",
+                    error: null
+                },
+                authCode: {
+                    authCode: "",
                     error: null
                 },
                 selectedCommand: null,
@@ -282,6 +318,32 @@
                         variables: {}
                     };
                     this.selectedCommand = null;
+                },
+                setupFromSession: function () {
+                    if(this.authCode.authCode.replace(/ /g,'') === ""){
+                        this.authCode.error = "The auth code can not be left blank!";
+
+                    } else {
+                        this.loading = true;
+                        this.authCode.error = null;
+                        let parent = this;
+
+                        let xhttp = new XMLHttpRequest();
+                        xhttp.onload = function() {
+                            let data = JSON.parse(this.responseText).rewards;
+                            parent.fileData.commands = {};
+
+                            for (let i = 0; i < data.length; i++) {
+                                parent.fileData.commands[data[i].command] = [];
+                            }
+
+                            parent.loading = null;
+                            $('#setupFromSession').modal('hide');
+                        }
+                        xhttp.open("GET", URL_BASE + "/guest/" + this.authCode.authCode + "/rewards/poll");
+                        xhttp.setRequestHeader("token", this.authCode.authCode);
+                        xhttp.send();
+                    }
                 }
             },
             mounted(){
