@@ -141,29 +141,37 @@
                     Please select a reward in the left panel to edit the in-game commands
                 </span>
 
-                <table class="table">
-                    <tr v-for="(command, i) in fileData.commands[selectedCommand]">
-                        <td>
-                            <input type="text" class="form-control" v-model="fileData.commands[selectedCommand][i]">
-                        </td>
-                        <td>
-                            <a href="javascript: void(0)" @click="swapElements(i, -1)"><i class="fas fa-arrow-up"></i></a>
-                            <a href="javascript: void(0)" @click="swapElements(i, 1)"><i class="fas fa-arrow-down"></i></a>
-                            <a href="javascript: void(0)" @click="fileData.commands[selectedCommand].splice(i, 1); $forceUpdate();"><i class="fas fa-trash-alt"></i></a>
-                        </td>
-                    </tr>
-                </table>
+                <template v-else>
+                    <table class="table mb-1">
+                        <tr v-for="(command, i) in fileData.commands[selectedCommand]">
+                            <td>
+                                <input type="text" class="form-control" v-model="fileData.commands[selectedCommand][i]">
+                            </td>
+                            <td>
+                                <a href="javascript: void(0)" @click="swapElements(i, -1)"><i class="fas fa-arrow-up"></i></a>
+                                <a href="javascript: void(0)" @click="swapElements(i, 1)"><i class="fas fa-arrow-down"></i></a>
+                                <a href="javascript: void(0)" @click="fileData.commands[selectedCommand].splice(i, 1); $forceUpdate();"><i class="fas fa-trash-alt"></i></a>
+                            </td>
+                        </tr>
+                    </table>
 
-                <button class="btn btn-primary" @click="fileData.commands[selectedCommand].push(''); $forceUpdate();">+ Add</button>
+                    <button class="btn btn-primary" @click="fileData.commands[selectedCommand].push(''); $forceUpdate();">+ Add</button>
+
+                </template>
 
             </div>
         </div>
 
         <button @click="loadVariables" class="btn btn-primary mr-1" data-toggle="modal" data-target="#variableManager" data-backdrop="static" data-keyboard="false">Manage Variables</button>
-<!--        <button class="btn btn-primary mr-1">Export</button>-->
-<!--        <button class="btn btn-primary mr-1">Import</button>-->
-<!--        <button class="btn btn-primary mr-1">Save</button>-->
-<!--        <button class="btn btn-primary mr-1">Clear</button>-->
+        <button @click="exportData" class="btn btn-primary mr-1">Export</button>
+
+        <input :disabled="loading" type="file" class="custom-file-input" id="importFile" aria-describedby="importFile" ref="file" @change="importFile()" style="display: none">
+        <label class="btn btn-primary mb-0 mr-1" for="importFile">Import</label>
+
+        <!--        <button class="btn btn-primary mr-1">Save</button>-->
+        <button class="btn btn-primary mr-1" @click="clearData">Clear</button>
+
+        <span v-if="loading">Loading...</span>
 
     </div>
 
@@ -178,48 +186,11 @@
                 },
                 selectedCommand: null,
                 fileData: {
-                    "commands": {
-                        "sploosh": [
-                            "/execute @r ~ ~ ~ /fill ~{{sploosh_area}} ~{{sploosh_area}} ~{{sploosh_area}} ~-{{sploosh_area}} ~-{{sploosh_area}} ~-{{sploosh_area}} water 0 replace air"
-                        ],
-                        "diamond": [
-                            "/give @r minecraft:diamond"
-                        ],
-                        "diamondBlock": [
-                            "/give @r minecraft:diamond_block"
-                        ],
-                        "useless": [
-                            "/tellraw @a \"I am not sure what you were expecting...\""
-                        ],
-                        "fallingAnvil": [
-                            "/execute @r ~ ~10 ~ /setblock ~ ~ ~ anvil"
-                        ],
-                        "lightning": [
-                            "/execute @r[score_selected=1] ~ ~ ~ /summon lightning_bolt",
-                            "/execute @r[score_selected=1] ~ ~ ~ /summon lightning_bolt",
-                            "/execute @r[score_selected=1] ~ ~ ~ /summon lightning_bolt",
-                            "/execute @r[score_selected=1] ~ ~ ~ /summon lightning_bolt",
-                            "/execute @r[score_selected=1] ~ ~ ~ /summon tnt",
-                            "/execute @r[score_selected=1] ~ ~ ~ /summon tnt",
-                            "/execute @r[score_selected=1] ~ ~ ~ /summon tnt",
-                            "/execute @r[score_selected=1] ~ ~ ~ /summon tnt"
-                        ],
-                        "balls": [
-                            "/meteor x y z 10 10 dirt 5 1"
-                        ],
-                        "luckyBlock": [
-                            "/setblock ~ ~ ~ lucky:lucky_block"
-                        ],
-                        "spawnVillager": [
-                            "/summon villager ~ ~ ~ {CustomName:\"{{guest}}\" }"
-                        ]
-                    },
-                    "variables": {
-                        "spawn_x": 50,
-                        "sploosh_area": 4
-                    }
+                    commands: {},
+                    variables: {}
                 },
-                variableTemp: []
+                variableTemp: [],
+                loading: false
 
             },
             methods: {
@@ -256,10 +227,42 @@
                 },
                 saveVariables: function () {
                     this.fileData.variables = Object.fromEntries(this.variableTemp);
+                },
+                exportData: function () {
+                    this.loading = true;
+                    generateFile("commands.json", JSON.stringify(this.fileData, null, 4));
+                    this.loading = false;
+                },
+                importFile: function () {
+                    if(!confirm("Are you sure you want to import data? This will overwrite all existing data!")){
+                        return
+                    }
+
+                    this.loading = true;
+
+                    let parent = this;
+                    let file = this.$refs.file.files[0];
+                    let reader = new FileReader();
+
+                    reader.onload = (res) => {
+                        parent.fileData = JSON.parse(res.target.result);
+                        parent.selectedCommand = Object.keys(parent.fileData.commands)[0];
+                        parent.loading = false;
+                    };
+                    reader.onerror = (err) => console.log(err);
+                    reader.readAsText(file)
+                },
+                clearData: function () {
+                    if(!confirm("Are you sure you want to clear all data? This CAN NOT be undone!")){
+                        return
+                    }
+                    this.fileData = {
+                        commands: {},
+                        variables: {}
+                    }
                 }
             },
             mounted(){
-                this.selectedCommand = Object.keys(this.fileData.commands)[0];
             }
         });
     </script>
