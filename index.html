@@ -153,6 +153,21 @@
                                 <span v-if="authCode.error !== null" class="form-text text-danger">${ authCode.error }</span>
                                 <span v-else class="form-text text-muted">The Authentication Code from your BackSeatGamer session</span>
                             </div>
+
+                            <div class="form-group">
+                                <div>
+                                    <div class="custom-control custom-checkbox custom-control-inline">
+                                        <input name="overwriteExistingCommands" id="overwriteExistingCommands_0" type="checkbox" class="custom-control-input" value="overwrite" aria-describedby="overwriteExistingCommandsHelpBlock" v-model="authCode.overwrite">
+                                        <label for="overwriteExistingCommands_0" class="custom-control-label">Overwrite Existing</label>
+                                    </div>
+                                    <span id="overwriteExistingCommandsHelpBlock" class="form-text text-muted">
+                                        If checked, all current data will be lost.
+                                        Otherwise, new commands in your session will be added without affecting existing data.
+                                        Variables will not be modified.
+                                    </span>
+                                </div>
+                            </div>
+
                             <div class="form-group">
                                 <button name="submit" type="submit" class="btn btn-primary">Import</button>
                             </div>
@@ -228,7 +243,8 @@
                 },
                 authCode: {
                     authCode: "",
-                    error: null
+                    error: null,
+                    overwrite: false
                 },
                 selectedCommand: null,
                 fileData: {
@@ -331,10 +347,20 @@
                         let xhttp = new XMLHttpRequest();
                         xhttp.onload = function() {
                             let data = JSON.parse(this.responseText).rewards;
-                            parent.fileData.commands = {};
 
-                            for (let i = 0; i < data.length; i++) {
-                                parent.fileData.commands[data[i].command] = [];
+                            if(parent.authCode.overwrite){
+                                parent.fileData.commands = {};
+
+                                for (let i = 0; i < data.length; i++) {
+                                    parent.fileData.commands[data[i].command] = [];
+                                }
+
+                            } else {
+                                for (let i = 0; i < data.length; i++) {
+                                    if(!parent.fileData.commands.hasOwnProperty(data[i].command)){
+                                        parent.fileData.commands[data[i].command] = [];
+                                    }
+                                }
                             }
 
                             parent.loading = null;
