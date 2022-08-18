@@ -1,1 +1,267 @@
-<h1>Hello, World!</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="author" content="CPSuperstore" />
+    <meta name="application-name" content="BackSeatGamerCommandFileManager">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css">
+    <link rel="stylesheet" href="/css/theme.css">
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>
+    <script type="text/javascript" src="/js/main.js"></script>
+
+    <link rel="icon" href="/images/logo/favicon.ico">
+    <link rel="apple-touch-icon" href="/images/logo/logo.png">
+
+    <meta property="og:image" content="/images/logo/logo.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="450">
+    <meta property="og:image:height" content="148">
+
+    <title>BackSeatGamer Command Mod File Manager</title>
+</head>
+<body>
+    <div class="container" id="app">
+
+        <div class="modal fade" id="newReward">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <h4 class="modal-title">New Reward</h4>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+
+                    <div class="modal-body">
+
+                        <form v-on:submit.prevent="addNewReward">
+                            <div class="form-group">
+                                <label for="newRewardCommand">Reward Command</label>
+                                <input id="newRewardCommand" name="newRewardCommand" type="text" class="form-control" aria-describedby="newRewardCommandHelpBlock" v-model="newReward.command">
+
+                                <span v-if="this.newReward.error !== null" class="form-text text-danger">${ this.newReward.error }</span>
+                                <span v-else id="newRewardCommandHelpBlock" class="form-text text-muted">The value of the "Command" column in the BackSeatGamer Mod Editor</span>
+                            </div>
+                            <div class="form-group">
+                                <button name="submit" type="submit" class="btn btn-primary">Add</button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="variableManager">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <h4 class="modal-title">Variable Manager</h4>
+<!--                        <button type="button" class="close" data-dismiss="modal">&times;</button>-->
+                    </div>
+
+                    <div class="modal-body">
+                        <table class="table">
+                            <tr>
+                                <th>Key</th>
+                                <th>Value</th>
+                                <th>Usage</th>
+                                <th></th>
+                            </tr>
+
+                            <tr v-for="(variable, i) in variableTemp">
+                                <td><input type="text" class="form-control" v-model="variableTemp[i][0]"></td>
+                                <td><input type="text" class="form-control" v-model="variableTemp[i][1]"></td>
+                                <td><pre>{{${ variable[0] }}}</pre></td>
+                                <td><a href="javascript: void(0)" @click="variableTemp.splice(i, 1); $forceUpdate();"><i class="fas fa-trash-alt"></i></a></td>
+                            </tr>
+                        </table>
+
+                        <button class="btn btn-primary" @click="variableTemp.push(['', ''])">+ Add</button>
+
+                        <h3 class="h5 mt-3">Built-In Variables</h3>
+
+                        <table class="table">
+                            <tr>
+                                <th>Key</th>
+                                <th>Value</th>
+                                <th>Usage</th>
+                            </tr>
+
+                            <tr>
+                                <td><input value="guest" disabled type="text" class="form-control"></td>
+                                <td><input value="[The name of the guest]" disabled type="text" class="form-control"></td>
+                                <td><pre>{{guest}}</pre></td>
+                            </tr>
+                            <tr>
+                                <td><input value="name" disabled type="text" class="form-control"></td>
+                                <td><input value="[The name of the reward]" disabled type="text" class="form-control"></td>
+                                <td><pre>{{name}}</pre></td>
+                            </tr>
+                            <tr>
+                                <td><input value="command" disabled type="text" class="form-control"></td>
+                                <td><input value="[The reward command]" disabled type="text" class="form-control"></td>
+                                <td><pre>{{command}}</pre></td>
+                            </tr>
+                        </table>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal" @click="saveVariables">Save</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <h1>BackSeatGamer Command Mod File Manager</h1>
+        <div class="row mb-3">
+            <div class="col-sm-3">
+                <h2 class="h4">Rewards</h2>
+                <div class="list-group">
+                    <a v-for="(commandList, reward) in fileData.commands" @click="selectedCommand=reward" href="javascript: void(0)" class="list-group-item list-group-item-action">${ reward }</a>
+                </div>
+
+                <button class="btn btn-primary btn-block mt-3" data-toggle="modal" data-target="#newReward" @click="newReward.error = null">+ Add</button>
+            </div>
+
+            <div class="col-sm-9">
+                <h2 class="h4">In-Game Commands</h2>
+                <span v-if="selectedCommand == null" class="text-muted">
+                    Please select a reward in the left panel to edit the in-game commands
+                </span>
+
+                <table class="table">
+                    <tr v-for="(command, i) in fileData.commands[selectedCommand]">
+                        <td>
+                            <input type="text" class="form-control" v-model="fileData.commands[selectedCommand][i]">
+                        </td>
+                        <td>
+                            <a href="javascript: void(0)" @click="swapElements(i, -1)"><i class="fas fa-arrow-up"></i></a>
+                            <a href="javascript: void(0)" @click="swapElements(i, 1)"><i class="fas fa-arrow-down"></i></a>
+                            <a href="javascript: void(0)" @click="fileData.commands[selectedCommand].splice(i, 1); $forceUpdate();"><i class="fas fa-trash-alt"></i></a>
+                        </td>
+                    </tr>
+                </table>
+
+                <button class="btn btn-primary" @click="fileData.commands[selectedCommand].push(''); $forceUpdate();">+ Add</button>
+
+            </div>
+        </div>
+
+        <button @click="loadVariables" class="btn btn-primary mr-1" data-toggle="modal" data-target="#variableManager" data-backdrop="static" data-keyboard="false">Manage Variables</button>
+<!--        <button class="btn btn-primary mr-1">Export</button>-->
+<!--        <button class="btn btn-primary mr-1">Import</button>-->
+<!--        <button class="btn btn-primary mr-1">Save</button>-->
+<!--        <button class="btn btn-primary mr-1">Clear</button>-->
+
+    </div>
+
+    <script type="text/javascript">
+        var app = new Vue({
+            el: '#app',
+            delimiters: ["${","}"],
+            data: {
+                newReward: {
+                    command: "",
+                    error: null
+                },
+                selectedCommand: null,
+                fileData: {
+                    "commands": {
+                        "sploosh": [
+                            "/execute @r ~ ~ ~ /fill ~{{sploosh_area}} ~{{sploosh_area}} ~{{sploosh_area}} ~-{{sploosh_area}} ~-{{sploosh_area}} ~-{{sploosh_area}} water 0 replace air"
+                        ],
+                        "diamond": [
+                            "/give @r minecraft:diamond"
+                        ],
+                        "diamondBlock": [
+                            "/give @r minecraft:diamond_block"
+                        ],
+                        "useless": [
+                            "/tellraw @a \"I am not sure what you were expecting...\""
+                        ],
+                        "fallingAnvil": [
+                            "/execute @r ~ ~10 ~ /setblock ~ ~ ~ anvil"
+                        ],
+                        "lightning": [
+                            "/execute @r[score_selected=1] ~ ~ ~ /summon lightning_bolt",
+                            "/execute @r[score_selected=1] ~ ~ ~ /summon lightning_bolt",
+                            "/execute @r[score_selected=1] ~ ~ ~ /summon lightning_bolt",
+                            "/execute @r[score_selected=1] ~ ~ ~ /summon lightning_bolt",
+                            "/execute @r[score_selected=1] ~ ~ ~ /summon tnt",
+                            "/execute @r[score_selected=1] ~ ~ ~ /summon tnt",
+                            "/execute @r[score_selected=1] ~ ~ ~ /summon tnt",
+                            "/execute @r[score_selected=1] ~ ~ ~ /summon tnt"
+                        ],
+                        "balls": [
+                            "/meteor x y z 10 10 dirt 5 1"
+                        ],
+                        "luckyBlock": [
+                            "/setblock ~ ~ ~ lucky:lucky_block"
+                        ],
+                        "spawnVillager": [
+                            "/summon villager ~ ~ ~ {CustomName:\"{{guest}}\" }"
+                        ]
+                    },
+                    "variables": {
+                        "spawn_x": 50,
+                        "sploosh_area": 4
+                    }
+                },
+                variableTemp: []
+
+            },
+            methods: {
+                swapElements: function (i, direction) {
+                    if ((i === 0 && direction === -1) || (i === this.fileData.commands[this.selectedCommand].length - 1 && direction === 1)){
+                        return;
+                    }
+                    let j = i + direction
+
+                    let tmp = this.fileData.commands[this.selectedCommand][i];
+                    this.fileData.commands[this.selectedCommand][i] = this.fileData.commands[this.selectedCommand][j];
+                    this.fileData.commands[this.selectedCommand][j] = tmp;
+
+                    this.$forceUpdate();
+                },
+                addNewReward: function () {
+                    if(this.newReward.command in this.fileData.commands) {
+                        this.newReward.error = "The requested command '" + this.newReward.command + "' already exists!";
+
+                    } else if(this.newReward.command.replace(/ /g,'') === ""){
+                        this.newReward.error = "The command can not be left blank!";
+
+                    } else {
+                        this.fileData.commands[this.newReward.command] = [];
+                        this.selectedCommand = this.newReward.command;
+                        this.newReward.error = null;
+                        this.$forceUpdate();
+
+                        $('#newReward').modal('hide');
+                    }
+                },
+                loadVariables: function () {
+                    this.variableTemp = Object.entries(this.fileData.variables);
+                },
+                saveVariables: function () {
+                    this.fileData.variables = Object.fromEntries(this.variableTemp);
+                }
+            },
+            mounted(){
+                this.selectedCommand = Object.keys(this.fileData.commands)[0];
+            }
+        });
+    </script>
+</body>
+</html>
