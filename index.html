@@ -10,19 +10,17 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css">
     <link rel="stylesheet" href="https://backseatgamer.pythonanywhere.com/static/css/theme.css">
-    <link rel="stylesheet" href="/css/theme.css">
 
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>
-    <script type="text/javascript" src="/js/main.js"></script>
 
-    <link rel="icon" href="/images/logo/favicon.ico">
-    <link rel="apple-touch-icon" href="/images/logo/logo.png">
+    <link rel="icon" href="https://backseatgamer.pythonanywhere.com/static/images/logo/favicon.ico">
+    <link rel="apple-touch-icon" href="https://backseatgamer.pythonanywhere.com/static/images/logo/logo.png">
 
-    <meta property="og:image" content="/images/logo/logo.png">
+    <meta property="og:image" content="https://backseatgamer.pythonanywhere.com/static/images/logo/logo.png">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="450">
     <meta property="og:image:height" content="148">
@@ -34,7 +32,7 @@
     <nav class="navbar navbar-expand-sm bg-dark navbar-dark mb-2">
         <div class="container">
             <a class="navbar-brand" href="https://backseatgamer.pythonanywhere.com/">
-                <img src="/images/logo/logo.png" style="height: 40px; padding: 0; margin-right: 5px" alt="BackSeatGamer Logo" class="nav-logo"> BackSeatGamer
+                <img src="https://backseatgamer.pythonanywhere.com/static/images/logo/logo.png" style="height: 40px; padding: 0; margin-right: 5px" alt="BackSeatGamer Logo" class="nav-logo"> BackSeatGamer
             </a>
         </div>
     </nav>
@@ -242,7 +240,18 @@
                 },
                 exportData: function () {
                     this.loading = true;
-                    generateFile("commands.json", JSON.stringify(this.fileData, null, 4));
+
+                    let element = document.createElement('a');
+                    element.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(this.fileData, null, 4)));
+                    element.setAttribute('download', "commands.json");
+
+                    element.style.display = 'none';
+                    document.body.appendChild(element);
+
+                    element.click();
+
+                    document.body.removeChild(element);
+
                     this.loading = false;
                 },
                 importFile: function () {
